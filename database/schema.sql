@@ -1,0 +1,32 @@
+CREATE DATABASE IF NOT EXISTS job_portal_db;
+USE job_portal_db;
+
+DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'CANDIDATE'
+);
+
+CREATE TABLE jobs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(150) NOT NULL,
+    description TEXT NOT NULL,
+    salary DECIMAL(10, 2),
+    employer_id INT NOT NULL,
+    FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE applications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    job_id INT NOT NULL,
+    candidate_id INT NOT NULL,
+    status VARCHAR(50) DEFAULT 'APPLIED',
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+    FOREIGN KEY (candidate_id) REFERENCES users(id) ON DELETE CASCADE
+);
