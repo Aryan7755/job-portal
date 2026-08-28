@@ -28,4 +28,13 @@ public class ApplicationController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+    // Get all applications or filter by job ID
+    @GetMapping
+    public ResponseEntity<java.util.List<Application>> getAllApplications(@RequestParam(required = false) Long jobId) {
+        if (jobId != null) {
+            // Optional: If you want to fetch applications for a specific job only
+            // For now, let's return all or implement a repository query if needed
+        }
+        return ResponseEntity.ok(applicationRepository.findAll());
+    }
 }
