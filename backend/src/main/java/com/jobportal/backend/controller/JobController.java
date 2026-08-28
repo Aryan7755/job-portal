@@ -35,7 +35,7 @@ public class JobController {
     }
 
     @PostMapping
-    public Job createJob(@RequestBody Job job) {
+    public Job createJob(@Valid @RequestBody Job job) {
         return jobRepository.save(job);
     }
 

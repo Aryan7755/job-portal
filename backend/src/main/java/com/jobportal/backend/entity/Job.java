@@ -1,5 +1,5 @@
 package com.jobportal.backend.entity;
-
+import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,9 +10,11 @@ public class Job {
     private Long id;
     
     @Column(nullable = false)
+    @NotBlank(message = "Job title is required")
     private String title;
     
     @Column(nullable = false, columnDefinition = "TEXT")
+    @NotBlank(message = "Job description is required")
     private String description;
     
     @Column(name = "employer_id", nullable = true)
