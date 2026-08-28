@@ -15,7 +15,7 @@ public class Job {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "employer_id", nullable = false)
+    @Column(name = "employer_id", nullable = true)
     private Long employerId;
     
     private Double salary;
