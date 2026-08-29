@@ -3,8 +3,10 @@ package com.jobportal.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // <-- Import pre-authorize
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.backend.entity.Job;
@@ -20,19 +22,22 @@ public class JobController {
     private JobRepository jobRepository;
 
     @GetMapping
+    @Cacheable(value = "jobs") // <-- Stores the result in Redis cache!
     public List<Job> getAllJobs() {
-        return jobRepository.findAll(); // Public: Anyone can browse jobs
+        System.out.println("Fetching jobs from MySQL Database..."); // To see when it hits DB vs Cache
+        return jobRepository.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Job> getJobById(@PathVariable Long id) {
         return jobRepository.findById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // Public: Anyone can view details
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('EMPLOYER', 'ADMIN')") // <-- Protected: Only Employers or Admins can post jobs!
+    @PreAuthorize("hasAnyRole('EMPLOYER', 'ADMIN')")
+    @CacheEvict(value = "jobs", allEntries = true) // <-- Clears the cache when a new job is posted!
     public ResponseEntity<Job> createJob(@Valid @RequestBody Job job) {
         Job savedJob = jobRepository.save(job);
         return ResponseEntity.ok(savedJob);
