@@ -4,41 +4,37 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize; // <-- Import pre-authorize
+import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.JobRepository;
-
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/jobs")
-//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class JobController {
+
     @Autowired
     private JobRepository jobRepository;
 
     @GetMapping
     public List<Job> getAllJobs() {
-        return jobRepository.findAll();
+        return jobRepository.findAll(); // Public: Anyone can browse jobs
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Job> getJobById(@PathVariable Long id) {
         return jobRepository.findById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build()); // Public: Anyone can view details
     }
 
     @PostMapping
-    public Job createJob(@Valid @RequestBody Job job) {
-        return jobRepository.save(job);
+    @PreAuthorize("hasAnyRole('EMPLOYER', 'ADMIN')") // <-- Protected: Only Employers or Admins can post jobs!
+    public ResponseEntity<Job> createJob(@Valid @RequestBody Job job) {
+        Job savedJob = jobRepository.save(job);
+        return ResponseEntity.ok(savedJob);
     }
-
 }

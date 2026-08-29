@@ -2,6 +2,7 @@ package com.jobportal.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException; // <-- Add this import
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +12,14 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Catch Spring Security access denied errors and force a 403 Forbidden status
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Access Denied: You do not have the required role for this action.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
 
     // Handle standard runtime exceptions (like "Job not found")
     @ExceptionHandler(RuntimeException.class)
