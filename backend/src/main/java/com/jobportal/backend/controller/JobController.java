@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.JobRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/jobs")
 //@CrossOrigin(origins = "*")
