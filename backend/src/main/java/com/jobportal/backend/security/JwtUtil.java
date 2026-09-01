@@ -3,6 +3,7 @@ package com.jobportal.backend.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -12,11 +13,11 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // A secure secret key for signing tokens (must be long enough for HMAC-SHA)
-    private final String SECRET = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkey"; 
+    // A secure secret key for signing tokens (must be at least 256 bits for HS256)
+    private final String SECRET = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkey";
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    // Generate token for a user
+    // Generate token for a username string
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)
@@ -24,6 +25,11 @@ public class JwtUtil {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours validity
                 .signWith(key)
                 .compact();
+    }
+
+    // Overloaded method to generate token directly from UserDetails
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(userDetails.getUsername());
     }
 
     // Extract username from token
@@ -54,9 +60,15 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // Validate token against username
+    // Validate token against username string
     public Boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    // Overloaded validation method against UserDetails object
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }

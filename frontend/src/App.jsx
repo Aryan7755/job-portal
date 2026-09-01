@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from 'react-router-dom';
 import PostJob from './components/PostJob';
 import JobDetails from './components/JobDetails';
-import ApplicationsList from './components/ApplicationsList'; // 1. Import ApplicationsList
+import ApplicationsList from './components/ApplicationsList';
+import AuthPage from './pages/AuthPage'; // 1. Import AuthPage
 import './App.css';
 
 // Main Job List / Home View Component
@@ -71,11 +72,16 @@ function App() {
       <div>
         {/* Navigation Header */}
         <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 40px', background: '#111', color: 'white', alignItems: 'center' }}>
-          <h2>Job Portal V1</h2>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <h2>Job Portal V2</h2>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Browse Jobs</Link>
             <Link to="/post-job" style={{ color: 'white', textDecoration: 'none' }}>Post a Job</Link>
-            <Link to="/applications" style={{ color: '#4dabf7', textDecoration: 'none', fontWeight: 'bold' }}>View Applications</Link> {/* 2. Navigation Link */}
+            <Link to="/applications" style={{ color: '#4dabf7', textDecoration: 'none', fontWeight: 'bold' }}>View Applications</Link>
+            
+            {/* 2. Navigation Link for Login/Register */}
+            <Link to="/auth" style={{ background: '#007bff', color: 'white', padding: '8px 15px', borderRadius: '4px', textDecoration: 'none' }}>
+              Login / Register
+            </Link>
           </div>
         </nav>
 
@@ -84,7 +90,10 @@ function App() {
           <Route path="/" element={<JobList />} />
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
-          <Route path="/applications" element={<ApplicationsList />} /> {/* 3. Route definition */}
+          <Route path="/applications" element={<ApplicationsList />} />
+          
+          {/* 3. Route definition for Auth Page */}
+          <Route path="/auth" element={<AuthPage />} />
         </Routes>
       </div>
     </Router>

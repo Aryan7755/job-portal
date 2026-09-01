@@ -3,23 +3,26 @@ package com.jobportal.backend.controller;
 import com.jobportal.backend.entity.User;
 import com.jobportal.backend.repository.UserRepository;
 import com.jobportal.backend.security.JwtUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jobportal.backend.service.CustomUserDetailsService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5174", "http://localhost:3000"})
 public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private UserRepository userRepository;
@@ -31,35 +34,55 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private CustomUserDetailsService userDetailsService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            logger.warn("Registration failed: Username '{}' is already taken", user.getUsername());
-            return ResponseEntity.badRequest().body(Map.of("error", "Username is already taken"));
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
+        if (userRepository.existsByUsername(user.getUsername())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username is already taken!"));
         }
-        
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is already in use!"));
+        }
 
-        logger.info("New user registered successfully with username: {}", user.getUsername());
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        // Securely hash the password using BCrypt before saving
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Default role if not provided
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("CANDIDATE");
+        }
+
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(Map.of(
+            "message", "User registered successfully!",
+            "username", savedUser.getUsername()
+        ));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginRequest) {
+        String username = loginRequest.get("username");
+        String password = loginRequest.get("password");
+
         try {
+            // Authenticate user credentials using Spring Security's AuthenticationManager
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+                new UsernamePasswordAuthenticationToken(username, password)
             );
         } catch (Exception e) {
-            logger.warn("Failed login attempt for username: {}", user.getUsername());
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
         }
 
-        String token = jwtUtil.generateToken(user.getUsername());
-        logger.info("User logged in successfully and issued JWT: {}", user.getUsername());
-        return ResponseEntity.ok(Map.of("token", token));
+        // Load user details and generate the JWT token
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        final String jwtToken = jwtUtil.generateToken(userDetails.getUsername());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwtToken);
+        response.put("username", userDetails.getUsername());
+        response.put("roles", userDetails.getAuthorities());
+
+        return ResponseEntity.ok(response);
     }
 }

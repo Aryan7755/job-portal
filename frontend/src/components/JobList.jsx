@@ -7,8 +7,8 @@ export default function JobList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch jobs from the backend via our proxy
-    axios.get('/api/jobs')
+    // Fixed: Use absolute backend URL
+    axios.get('http://localhost:8080/api/jobs')
       .then(response => {
         setJobs(response.data);
         setLoading(false);
@@ -20,14 +20,14 @@ export default function JobList() {
       });
   }, []);
 
-  if (loading) return <div style={{ padding: '20px' }}>Loading jobs from kitchen...</div>;
+  if (loading) return <div style={{ padding: '20px' }}>Loading jobs...</div>;
   if (error) return <div style={{ padding: '20px', color: 'red' }}>{error}</div>;
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h2>Available Jobs</h2>
       {jobs.length === 0 ? (
-        p("No jobs found. Try posting one!")
+        <p>No jobs found. Try posting one!</p>
       ) : (
         <ul style={{ listStyleType: 'none', padding: 0 }}>
           {jobs.map(job => (

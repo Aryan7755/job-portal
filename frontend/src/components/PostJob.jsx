@@ -18,7 +18,7 @@ export default function PostJob() {
       salary: salary ? parseFloat(salary) : null
     };
 
-    axios.post('/api/jobs', newJob)
+    axios.post('http://localhost:8080/api/jobs', newJob)
       .then(response => {
         setMessage('Job posted successfully!');
         setTimeout(() => {

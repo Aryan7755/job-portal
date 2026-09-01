@@ -1,6 +1,6 @@
-package com.jobportal.backend.model;
+package com.jobportal.backend.entity;
 
-import com.jobportal.backend.entity.Job;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,8 +25,9 @@ public class Application {
     @NotBlank(message = "Resume link is required")
     private String resumeUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "job_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Job job;
 
     @Column(length = 1000)

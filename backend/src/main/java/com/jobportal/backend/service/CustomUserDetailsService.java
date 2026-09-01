@@ -1,4 +1,4 @@
-package com.jobportal.backend.security;
+package com.jobportal.backend.service;
 
 import com.jobportal.backend.entity.User;
 import com.jobportal.backend.repository.UserRepository;
